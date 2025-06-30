@@ -21,7 +21,7 @@ datasets:
           name: "blip_question"
     build_info:
         images:
-            storage: "/export/share/datasets/vision/GQA/images/"
+            storage: "/leonardo_work/EUHPC_D25_055/jli/dataset/gqa/gqa_images/"
 
 run:
   task: gqa
@@ -47,4 +47,4 @@ run:
   device: "cuda"
   world_size: 1
   dist_url: "env://"
-  distributed: True
+  distributed: False

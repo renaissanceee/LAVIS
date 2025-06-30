@@ -152,7 +152,6 @@ class BaseDatasetBuilder:
                         )
                     else:
                         filename = os.path.basename(storage_path)
-
                     download_url(url=url_or_filename, root=dirname, filename=filename)
 
     def _download_vis(self):

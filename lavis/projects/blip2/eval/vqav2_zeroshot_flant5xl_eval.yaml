@@ -24,9 +24,6 @@ datasets:
     text_processor:
         eval:
           name: "blip_question"
-#     build_info:
-#         images:
-#             storage: '/export/share/datasets/vision/coco/images/'
 
 run:
   task: vqa
@@ -52,4 +49,4 @@ run:
   device: "cuda"
   world_size: 1
   dist_url: "env://"
-  distributed: True
+  distributed: False
