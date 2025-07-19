@@ -171,6 +171,7 @@ class VQATask(BaseTask):
         metrics = {}
 
         if split in self.ques_files and split in self.anno_files:
+            # import pdb;pdb.set_trace()
             vqa = VQA(self.anno_files[split], self.ques_files[split])
             vqa_result = vqa.loadRes(
                 resFile=result_file, quesFile=self.ques_files[split]
@@ -398,6 +399,91 @@ class GQATask(VQATask):
 
         with open(
             os.path.join(registry.get_path("output_dir"), "evaluate.txt"), "a"
+        ) as f:
+            f.write(json.dumps(metrics) + "\n")
+
+        logging.info(metrics)
+
+        return metrics
+
+
+@registry.register_task("syn_vqa")
+class SYNVQATask(VQATask):
+    def valid_step(self, model, samples):
+        answers = model.predict_answers(
+            samples=samples,
+            answer_list=self.answer_list,
+            inference_method=self.inference_method,
+            num_beams=self.num_beams,
+            max_len=self.max_len,
+            min_len=self.min_len,
+            num_ans_candidates=self.num_ans_candidates,
+            prompt=self.prompt,
+        )
+        pred_qa_pairs = []
+
+        question_id = samples["question_id"]
+        gt_answers = samples["answer"]
+
+        for answer, ques_id, gt_answer in zip(answers, question_id, gt_answers):
+            ques_id = int(ques_id.item()) if isinstance(ques_id, torch.Tensor) else ques_id
+            pred_qa_pairs.append({"question_id": ques_id, "pred_ans": answer, "gt_ans": gt_answer})
+
+        return pred_qa_pairs
+
+    def build_datasets(self, cfg):
+        datasets = BaseTask.build_datasets(self, cfg)
+
+        # get question file, annotation file and anwser list in COCO format
+        for ds_name, dataset in datasets.items():
+            for split in dataset:
+                if (
+                        hasattr(dataset[split], "coco_fmt_qust_file")
+                        and dataset[split].coco_fmt_qust_file is not None
+                ):
+                    self.ques_files[split] = dataset[split].coco_fmt_qust_file
+                    self.anno_files[split] = dataset[split].coco_fmt_anno_file
+
+        if len(self.ques_files) > 0:
+            assert len(self.ques_files) == len(
+                self.anno_files
+            ), "Only support one split for evaluation."
+
+        return datasets
+
+    @dist_utils.main_process
+    def _report_metrics(self, result_file, split):
+        results = json.load(open(result_file, "r"))
+        acc = []
+        vqa_tool = VQAEval()
+
+        for res in results:
+            if res["gt_ans"] is None:
+                # prepare test results for leaderboard evaluation
+                import pdb;pdb.set_trace()
+                self._save_result_leaderboard(results)
+                return
+
+            gt_ans = res["gt_ans"]
+            pred = res["pred_ans"]
+
+            # if self.inference_method == "generate":
+            pred = vqa_tool.processPunctuation(pred)
+            pred = vqa_tool.processDigitArticle(pred)
+
+            # added to ensure that the ground truth format of answers is as expected for non-gqa but similar tasks
+            gt_ans = vqa_tool.processPunctuation(gt_ans)
+            gt_ans = vqa_tool.processDigitArticle(gt_ans)
+
+            vqa_acc = 1 if pred == gt_ans else 0
+
+            acc.append(vqa_acc)
+
+        accuracy = sum(acc) / len(acc) * 100
+        metrics = {"agg_metrics": accuracy, "acc": accuracy}
+
+        with open(
+                os.path.join(registry.get_path("output_dir"), "evaluate.txt"), "a"
         ) as f:
             f.write(json.dumps(metrics) + "\n")
 

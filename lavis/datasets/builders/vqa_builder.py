@@ -12,9 +12,13 @@ from lavis.datasets.datasets.aok_vqa_datasets import AOKVQADataset, AOKVQAEvalDa
 from lavis.datasets.datasets.coco_vqa_datasets import COCOVQADataset, COCOVQAEvalDataset, COCOVQAInstructDataset
 from lavis.datasets.datasets.vg_vqa_datasets import VGVQADataset, VGVQAInstructDataset
 from lavis.datasets.datasets.gqa_datasets import GQADataset, GQAEvalDataset, GQAInstructDataset
+# SYNBuilder
+from lavis.datasets.datasets.syn_coco_datasets import SYNCOCODataset, SYNCOCOEvalDataset # JJ
 from lavis.datasets.datasets.iconqa_datasets import IconQADataset, IconQAEvalDataset, IconQAInstructDataset
 from lavis.datasets.datasets.ocr_datasets import OCRVQADataset, OCRVQAInstructDataset
 from lavis.datasets.datasets.vizwiz_vqa_datasets import VizWizEvalDataset
+
+
 
 @registry.register_builder("coco_vqa")
 class COCOVQABuilder(BaseDatasetBuilder):
@@ -45,6 +49,19 @@ class VGVQABuilder(BaseDatasetBuilder):
 class VGVQAInstructBuilder(BaseDatasetBuilder):
     train_dataset_cls = VGVQAInstructDataset
     DATASET_CONFIG_DICT = {"default": "configs/datasets/vg/defaults_vqa_instruct.yaml"}
+
+@registry.register_builder("syn_coco_vqa")
+# class OKVQABuilder(COCOVQABuilder):
+#     DATASET_CONFIG_DICT = {
+#         "default": "configs/datasets/syn_coco/defaults.yaml",
+#     }
+class SYNCOCOVQABuilder(BaseDatasetBuilder):
+    train_dataset_cls = SYNCOCODataset
+    eval_dataset_cls = SYNCOCOEvalDataset
+
+    DATASET_CONFIG_DICT = {
+        "default": "configs/datasets/syn_coco/defaults.yaml",
+    }
 
 @registry.register_builder("ok_vqa")
 class OKVQABuilder(COCOVQABuilder):

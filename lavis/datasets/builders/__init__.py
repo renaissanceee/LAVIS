@@ -66,6 +66,7 @@ from lavis.datasets.builders.video_qa_builder import (
 
 from lavis.datasets.builders.vqa_builder import (
     COCOVQABuilder,
+    SYNCOCOVQABuilder,
     COCOVQAInstructBuilder,
     OKVQABuilder,
     OKVQAInstructBuilder,
@@ -129,6 +130,7 @@ __all__ = [
     "COCOCapBuilder",
     "COCORetrievalBuilder",
     "COCOVQABuilder",
+    "SYNCOCOVQABuilder",
     "ConceptualCaption12MBuilder",
     "ConceptualCaption3MBuilder",
     "DiDeMoRetrievalBuilder",

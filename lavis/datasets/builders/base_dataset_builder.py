@@ -135,7 +135,6 @@ class BaseDatasetBuilder:
                 dirname = os.path.dirname(storage_path)
                 if not os.path.exists(dirname):
                     os.makedirs(dirname)
-
                 if os.path.isfile(url_or_filename):
                     src, dst = url_or_filename, storage_path
                     if not os.path.exists(dst):
